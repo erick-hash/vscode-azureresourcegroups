@@ -6,10 +6,13 @@
 import { AzExtTreeItem, IActionContext, registerCommand, registerErrorHandler, registerReportIssueCommand } from '@microsoft/vscode-azext-utils';
 import { commands } from 'vscode';
 import { ext } from '../extensionVariables';
-import { configureExplorer } from './configureExplorer';
 import { createResource } from './createResource';
 import { createResourceGroup } from './createResourceGroup';
 import { deleteResourceGroup } from './deleteResourceGroup';
+import { clearFocus } from './explorer/clearFocus';
+import { configureExplorer } from './explorer/configureExplorer';
+import { focusGroup } from './explorer/focusGroup';
+import { buildGroupByCommand } from './explorer/groupBy';
 import { getStarted } from './helpAndFeedback/getStarted';
 import { reportIssue } from './helpAndFeedback/reportIssue';
 import { reviewIssues } from './helpAndFeedback/reviewIssues';
@@ -41,4 +44,10 @@ export function registerCommands(): void {
     registerCommand('azureResourceGroups.configureExplorer', configureExplorer);
     registerCommand('azureResourceGroups.createResource', createResource);
     registerCommand('azureResourceGroups.refreshWorkspace', refreshWorkspace);
+    registerCommand('azureResourceGroups.focusGroup', focusGroup);
+    registerCommand('azureResourceGroups.clearFocus', clearFocus);
+    registerCommand('azureResourceGroups.groupBy.resourceGroup', buildGroupByCommand('resourceGroup'));
+    registerCommand('azureResourceGroups.groupBy.resourceType', buildGroupByCommand('resourceType'));
+    registerCommand('azureResourceGroups.groupBy.location', buildGroupByCommand('location'));
+    registerCommand('azureResourceGroups.groupBy.other', configureExplorer);
 }

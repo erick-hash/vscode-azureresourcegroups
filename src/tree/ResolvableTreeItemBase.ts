@@ -23,10 +23,12 @@ export abstract class ResolvableTreeItemBase extends AzExtParentTreeItem impleme
         return Array.from(this.contextValues.values()).sort().join(';');
     }
 
+    public resolved = false;
+
     public async loadMoreChildrenImpl(clearCache: boolean, context: IActionContext): Promise<AzExtTreeItem[]> {
         await this.resolve(clearCache, context);
         if (this.resolveResult && this.resolveResult.loadMoreChildrenImpl) {
-            return await this.resolveResult.loadMoreChildrenImpl(clearCache, context);
+            return await this.loadMoreChildrenImpl(clearCache, context);
         } else {
             return [];
         }
@@ -52,6 +54,7 @@ export abstract class ResolvableTreeItemBase extends AzExtParentTreeItem impleme
             }
 
             this.resolveResult?.contextValuesToAdd?.forEach(cv => this.contextValues.add(cv));
+            this.resolved = true;
 
             await this.refresh(context); // refreshUIOnly?
         });

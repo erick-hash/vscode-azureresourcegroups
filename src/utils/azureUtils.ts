@@ -6,7 +6,7 @@
 import { GenericResource } from '@azure/arm-resources';
 import { nonNullProp, TreeItemIconPath } from '@microsoft/vscode-azext-utils';
 import { ThemeIcon } from 'vscode';
-import { GroupingConfig } from '../api';
+import { GroupingConfig, GroupNodeConfiguration } from '../api';
 import { localize } from './localize';
 import { treeUtils } from './treeUtils';
 import path = require('path');
@@ -27,10 +27,12 @@ export function getResourceGroupFromId(id: string): string {
 
 export function createGroupConfigFromResource(resource: GenericResource, subscriptionId: string | undefined): GroupingConfig {
     const id = nonNullProp(resource, 'id');
+
     return {
         resourceGroup: { keyLabel: 'Resource Groups', label: getResourceGroupFromId(id), id: id.substring(0, id.indexOf('/providers')).toLowerCase() },
-        resourceType: {
-            keyLabel: 'Resource Types', label: resource.type?.toLowerCase() ?? 'unknown',
+        resourceType: resource.kind === 'functionapp' ? getFunctionResourceType(resource, subscriptionId) : {
+            keyLabel: 'Resource Types',
+            label: resourceTypeNames[resource.type?.toLowerCase() as ResourceTypes] ?? resource.type?.toLowerCase() ?? 'unknown',
             id: `${subscriptionId}/${resource.type}` ?? 'unknown',
             iconPath: getIconPath(resource?.type ?? 'resource')
         },
@@ -43,14 +45,33 @@ export function createGroupConfigFromResource(resource: GenericResource, subscri
     }
 }
 
-export function getIconPath(type?: string): TreeItemIconPath {
+function getFunctionResourceType(resource: GenericResource, subscriptionId: string | undefined): GroupNodeConfiguration {
+
+    if (resource.type?.toLowerCase() === 'microsoft.web/sites') {
+        return {
+            keyLabel: 'Resource Types',
+            label: resourceTypeNames['microsoft.web/functionapp'] ?? 'Function App',
+            id: `${subscriptionId}/microsoft.web/functionapp`,
+            iconPath: getIconPath('microsoft.web/functionapp')
+        }
+    } else {
+        return {
+            keyLabel: 'Resource Types',
+            label: resourceTypeNames['microsoft.web/serverfarms'] ?? 'App Service Plan',
+            id: `${subscriptionId}/microsoft.web/serverfarms`,
+            iconPath: getIconPath('microsoft.web/serverfarms')
+        }
+    }
+}
+
+export function getIconPath(type?: string, kind?: string): TreeItemIconPath {
     let iconName: string;
     const rType: string | undefined = type?.toLowerCase();
-    if (rType && supportedIconTypes.includes(rType)) {
+    if (rType && supportedIconTypes.includes(rType as typeof supportedIconTypes[number])) {
         iconName = rType;
         switch (rType) {
             case 'microsoft.web/sites':
-                if (type?.toLowerCase().includes('functionapp')) {
+                if (kind?.toLowerCase().includes('functionapp')) {
                     iconName = iconName.replace('sites', 'functionapp');
                 }
                 break;
@@ -64,9 +85,29 @@ export function getIconPath(type?: string): TreeItemIconPath {
     return treeUtils.getIconPath(iconName);
 }
 
+const resourceTypeNames: Partial<Record<ResourceTypes, string>> = {
+    'microsoft.web/staticsites': 'Static Web Apps',
+    'microsoft.web/sites': 'App Service',
+    "microsoft.compute/virtualmachines": "Virtual Machines",
+    "microsoft.network/networkinterfaces": "Network Interfaces",
+    "microsoft.network/networksecuritygroups": "Network Security Groups",
+    "microsoft.storage/storageaccounts": "Storage Accounts",
+    "microsoft.network/publicipaddresses": "Public IP Addresses",
+    "microsoft.network/virtualnetworks": "Virtual Networks",
+    "microsoft.network/applicationgateways": "Application Gateways",
+    "microsoft.network/loadbalancers": "Load Balancers",
+    "microsoft.network/applicationsecuritygroups": "Application Security Groups",
+    "microsoft.dbforpostgresql/servers": "PostgreSQL Servers (Single)",
+    "microsoft.dbforpostgresql/flexibleservers": "PostgreSQL Servers (Flexible)",
+    "microsoft.compute/disks": "Disks",
+    "microsoft.documentdb/databaseaccounts": "Cosmos DB",
+    "microsoft.web/functionapp": "Function App",
+}
+
+type ResourceTypes = typeof supportedIconTypes[number];
 
 // Execute `npm run listIcons` from root of repo to re-generate this list after adding an icon
-export const supportedIconTypes: string[] = [
+export const supportedIconTypes = [
     'microsoft.web/functionapp',
     'microsoft.web/hostingenvironments',
     'microsoft.web/kubeenvironments',
@@ -108,6 +149,7 @@ export const supportedIconTypes: string[] = [
     'microsoft.documentdb/databaseaccounts',
     'microsoft.devtestlab/labs',
     'microsoft.devices/iothubs',
+    'microsoft.dbforpostgresql/flexibleservers',
     'microsoft.dbforpostgresql/servers',
     'microsoft.dbformysql/servers',
     'microsoft.containerservice/managedclusters',
@@ -121,4 +163,4 @@ export const supportedIconTypes: string[] = [
     'microsoft.cache/redis',
     'microsoft.batch/batchaccounts',
     'microsoft.apimanagement/service',
-];
+] as const;

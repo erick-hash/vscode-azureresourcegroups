@@ -23,12 +23,15 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
     private _items: GroupableResource[] = [];
     private _treeMap: { [key: string]: GroupTreeItemBase } = {};
 
+    private _keepCache = false;
+
     private rgsItem: AppResource[] = [];
 
 
     public constructor(parent: AzExtParentTreeItem, subscription: ISubscriptionContext) {
         super(parent, subscription);
-        this.registerRefreshEvents('groupBy')
+        this.registerRefreshEvents('groupBy');
+        this.registerRefreshEvents('focusedGroup');
     }
 
     public hasMoreChildrenImpl(): boolean {
@@ -36,10 +39,11 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
     }
 
     public async loadMoreChildrenImpl(clearCache: boolean, context: IActionContext): Promise<AzExtTreeItem[]> {
-        if (clearCache) {
+        if (clearCache && !this._keepCache) {
             this._nextLink = undefined;
             this.rgsItem = [];
         }
+        this._keepCache = false;
 
         if (this.rgsItem.length === 0) {
             this.rgsItem.push(...(await applicationResourceProviders[azureResourceProviderId]?.provideResources(this.subscription) ?? []));
@@ -48,9 +52,8 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             // await Promise.all(applicationResourceProviders.map((provider: ApplicationResourceProvider) => async () => this.rgsItem.push(...(await provider.provideResources(this.subscription) ?? []))));
 
             this.rgsItem.forEach(item => ext.activationManager.onNodeTypeFetched(item.type));
+            this._items = this.rgsItem.map((resource: AppResource): GroupableResource => AppResourceTreeItem.Create(this, resource));
         }
-
-        this._items = this.rgsItem.map((resource: AppResource): GroupableResource => AppResourceTreeItem.Create(this, resource));
 
         // dynamically generate GroupBy keys, should be moved
         for (const item of this._items) {
@@ -62,6 +65,11 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         }
 
         await this.refresh(context);
+        const focusedGroupSetting = <string | null>settingUtils.getGlobalSetting<string | null>('focusedGroup');
+        if (focusedGroupSetting && this._treeMap[focusedGroupSetting]) {
+            return [this._treeMap[focusedGroupSetting]];
+        }
+
         return <AzExtTreeItem[]>Object.values(this._treeMap);
     }
 
@@ -90,6 +98,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             context.telemetry.properties.isActivationEvent = 'true';
 
             if (e.affectsConfiguration(`${ext.prefix}.${key}`)) {
+                this._keepCache = true;
                 await this.refresh(context);
             }
         });

@@ -5,8 +5,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext } from "@microsoft/vscode-azext-utils";
-import { ext } from "../extensionVariables";
-import { settingUtils } from "../utils/settingUtils";
+import { ext } from "../../extensionVariables";
+import { settingUtils } from "../../utils/settingUtils";
 
 export async function configureExplorer(context: IActionContext): Promise<void> {
     const value = await context.ui.showQuickPick(Object.keys(ext.groupByKeys).map(key => { return { label: ext.groupByKeys[key], data: key } }), {})

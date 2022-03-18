@@ -44,6 +44,7 @@ export interface GroupNodeConfiguration {
     readonly icon?: vscode.ThemeIcon;
     readonly iconPath?: string | vscode.Uri | { light: string | vscode.Uri; dark: string | vscode.Uri } | vscode.ThemeIcon;
     readonly contextValue?: string;
+    readonly displayName?: string;
 }
 
 /**
@@ -180,7 +181,7 @@ interface ContextValuesToAdd {
     contextValuesToAdd?: string[];
 }
 
-export type ResolvedAppResourceBase = Partial<{ [P in keyof SealedAzExtTreeItem]: never }> & Partial<AbstractAzExtTreeItem> & ContextValuesToAdd;
+export type ResolvedAppResourceBase = Partial<{ [P in keyof SealedAzExtTreeItem]: never }> & Partial<AbstractAzExtTreeItem> & ContextValuesToAdd & Record<string, unknown>;
 
 export type ResolvedAppResourceTreeItem<T extends ResolvedAppResourceBase> = AppResource & SealedAzExtTreeItem & Omit<T, keyof ResolvedAppResourceBase>;
 

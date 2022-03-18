@@ -17,6 +17,8 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
     public items: AppResourceTreeItem[];
     public config: GroupNodeConfiguration;
 
+    public static focusedGroupId: string | undefined;
+
     public readonly cTime: number = Date.now();
     public mTime: number = Date.now();
 
@@ -35,7 +37,15 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
     }
 
     public get contextValue(): string {
-        return this.config.contextValue || 'GroupTreeItem';
+        const contextValues = ['azExtGroup', GroupTreeItemBase.focusedGroupId === this.id ? 'hasFocus=true' : 'hasFocus=false'];
+        if (this.config.contextValue) {
+            contextValues.push(this.config.contextValue);
+        }
+
+        if (GroupTreeItemBase.focusedGroupId === this.id) {
+            contextValues.push('focusedGroup');
+        }
+        return contextValues.join(';');
     }
 
     public get description(): string | undefined {
@@ -52,7 +62,7 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
         }
 
         for (const ti of Object.values(this.treeMap)) {
-            if (ti instanceof ResolvableTreeItemBase) {
+            if (ti instanceof ResolvableTreeItemBase && !ti.resolved) {
                 void ti.resolve(clearCache, context);
             }
         }
@@ -76,5 +86,9 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
 
     public get iconPath(): TreeItemIconPath | undefined {
         return this.config.icon ?? this.config.iconPath ?? treeUtils.getIconPath('resource');
+    }
+
+    compareChildrenImpl(item1: AzExtTreeItem, item2: AzExtTreeItem): number {
+        return item1.label.localeCompare(item2.label);
     }
 }
