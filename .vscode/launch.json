@@ -27,7 +27,7 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurestaticwebapps",
-                "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurefunctions"
+                "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurevirtualmachines"
             ],
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"

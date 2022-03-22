@@ -222,3 +222,6 @@ export declare function registerApplicationResourceProvider(id: string, provider
 // resource extensions need to activate onView:localResourceView and call this
 export declare function registerLocalResourceProvider(id: string, provider: LocalResourceProvider): vscode.Disposable;
 
+export declare abstract class AzExtParentTreeItem extends AzExtTreeItem {
+    removeChildFromCache(node: AzExtTreeItem): void;
+}

@@ -163,13 +163,13 @@
                 "command": "azureResourceGroups.focusGroup",
                 "title": "Focus this group",
                 "category": "Azure Resource Groups",
-                "icon": "$(arrow-right)"
+                "icon": "$(zoom-in)"
             },
             {
                 "command": "azureResourceGroups.clearFocus",
                 "title": "Clear focus",
                 "category": "Azure Resource Groups",
-                "icon": "$(close)"
+                "icon": "$(zoom-out)"
             }
         ],
         "viewsContainers": {
@@ -185,7 +185,7 @@
             "azure": [
                 {
                     "id": "azureResourceGroups",
-                    "name": "Resource Groups",
+                    "name": "Azure Resources",
                     "visibility": "collapsed"
                 },
                 {

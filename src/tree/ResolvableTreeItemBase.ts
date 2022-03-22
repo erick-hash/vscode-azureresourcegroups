@@ -38,6 +38,10 @@ export abstract class ResolvableTreeItemBase extends AzExtParentTreeItem impleme
         return false;
     }
 
+    public get description(): string | undefined {
+        return this.resolveResult?.description;
+    }
+
     public async resolve(clearCache: boolean, context: IActionContext): Promise<void> {
         ext.activationManager.onNodeTypeResolved(this.data.type);
 
